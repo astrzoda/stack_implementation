@@ -1,5 +1,4 @@
 from collections import Iterable
-import pytest
 
 
 class Node:
@@ -9,39 +8,64 @@ class Node:
 
 
 class Stack:
-    def __init__(self, new_element):
-        self._node = Node(new_element)
+    def __init__(self, *args):
+        self._last_node = None  # sentry
+        if len(args) == 0:
+            pass
+        elif isinstance(args[0], Iterable):
+            for i, value in enumerate(args[0]):
+                if i == 0:
+                    self._last_node = Node(value)
+                else:
+                    parent = self._last_node
+                    self._last_node = Node(value, parent)
+
+        else:
+            self._last_node = Node(args[0])
+
+    @property
+    def top(self):
+        if self._last_node is None:
+            raise ValueError
+        else:
+            return self._last_node.value
+
+    def pop(self):
+        if self._last_node is None:
+            raise ValueError
+        else:
+            popped_element = self._last_node.value
+            self._last_node = self._last_node.parent
+            self.depth -= 1
+            return popped_element
+
+    def push(self, new_element):
+        self._last_node = Node(new_element, parent=self._last_node)
 
     @property
     def depth(self):
         counter = 0
-        node = self._node
+        node = self._last_node
         while node is not None:
             counter += 1
             node = node.parent
         return counter
 
-    def push(self, new_element):
-        self._node = Node(new_element, parent=self._node)
-
-    def pop(self):
-        if self.depth == 0:
-            raise ValueError("Cannot use pop for empty stack")
-        self._node = self._node.value
+    @depth.setter
+    def depth(self, value):
+        self._depth = value  # why self._depth is underlined here?
 
 
 if __name__ == "__main__":
-    stack = Stack("abc")
+    try:
+        stack = Stack([1, 2, 3])
+        stack.pop()
+        stack.pop()
+        print(stack.depth)
+        print(stack.top)
+    except ValueError:
+        print("")
 
-    # print("depth", stack.depth)
-    stack.push("abc")
-    # print("depth", stack.depth)
-    stack.pop()
-    print(stack.depth)
-
-    # print(stack.top)
-    # stack = Stack()
-    # print(stack.depth)
 
 
 
